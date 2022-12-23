@@ -28,8 +28,7 @@ const GridLayout = () => {
           formatedDate = formatDate(dateString, DEFAULT_DATE_FORMAT);
         }
         console.log(formatedDate);
-        debugger;
-        const dateParse = new Date(
+            const dateParse = new Date(
           formatedDate.split("/")[0] +
             "-" +
             formatedDate.split("/")[1] +
@@ -74,8 +73,25 @@ const GridLayout = () => {
   };
 
   const components = { datePicker: getDatePicker() };
+  const handleEdit = (data) => {
+    const variant = "success";
+    enqueueSnackbar(data.id, {
+      variant,
+      autoHideDuration: 2000,
+      anchorOrigin: { horizontal: "center", vertical: "top" },
+    });
+  };
+
+  const getActionButton = (params) => {
+    return (
+      <Button variant="contained" onClick={() => handleEdit(params?.data)}>
+        Edit
+      </Button>
+    );
+  };
 
   const [columnDefs] = useState([
+    // { field: "id", checkboxSelection: true, headerCheckboxSelection: true },
     {
       field: "athlete",
       cellEditor: "agSelectCellEditor",
@@ -98,6 +114,7 @@ const GridLayout = () => {
     { field: "silver" },
     { field: "bronze" },
     { field: "total" },
+    { field: "action", cellRenderer: getActionButton },
   ]);
 
   const defaultColDef = useMemo(() => {
@@ -115,8 +132,7 @@ const GridLayout = () => {
       const reader = new FileReader();
       reader.onload = (event) => {
         const wb = read(event.target.result);
-        debugger;
-        const sheets = wb.SheetNames;
+            const sheets = wb.SheetNames;
 
         if (sheets.length) {
           const rows = utils.sheet_to_json(wb.Sheets[sheets[0]], {
@@ -133,6 +149,7 @@ const GridLayout = () => {
   const handleExport = () => {
     const headings = [
       [
+        "id",
         "athlete",
         "age",
         "country",
@@ -154,7 +171,7 @@ const GridLayout = () => {
         origin: "A2",
         skipHeader: true,
       });
-      utils.book_append_sheet(wb, ws, "Report");
+      utils.book_append_sheet(wb, ws, "Sample Data");
       writeFile(wb, "Olympic Data.xlsx");
     } else {
       const variant = "warning";
