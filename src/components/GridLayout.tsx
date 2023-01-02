@@ -11,37 +11,45 @@ import { useSnackbar } from "notistack";
 import { Button } from "@mui/material";
 
 const GridLayout = () => {
-  const [rowData, setRowData] = useState([]);
-  const [gridApi, setGridAppi] = useState();
+  const [rowData, setRowData] = useState<any[]>([]);
+  const [gridApi, setGridAppi] = useState<keyable>();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const gridRef = useRef();
+  const gridRef: any = useRef();
+
+  interface keyable {
+    [value: string]: any;
+    [current: symbol]: any;
+  }
+  interface currentObject {
+    [key: string]: any;
+  }
 
   const getDatePicker = () => {
     function Datepicker() {}
-    Datepicker.prototype.init = function (params) {
-      const fillZeros = (a) => {
+    Datepicker.prototype.init = function (params: keyable) {
+      const fillZeros = (a: Number) => {
         return Number(a) < 10 ? "0" + a : a;
       };
-      const getFormatedDate = (dateString) => {
-        let formatedDate = "";
+      const getFormatedDate = (dateString: moment.MomentInput) => {
+        let formatedDate: String | null = "";
         if (dateString) {
           formatedDate = formatDate(dateString, DEFAULT_DATE_FORMAT);
         }
-        console.log(formatedDate);
-            const dateParse = new Date(
-          formatedDate.split("/")[0] +
-            "-" +
-            formatedDate.split("/")[1] +
-            "-" +
-            formatedDate.split("/")[2]
-        );
-        const dd = dateParse.getDate();
-        const mm = dateParse.getMonth() + 1; //January is 0!
-        const yyyy = dateParse.getFullYear();
-        console.log(
-          formatedDate,
-          yyyy + "-" + fillZeros(mm) + "-" + fillZeros(dd)
-        );
+        let dateParse: keyable;
+        let dd, mm, yyyy;
+        if (formatedDate !== null) {
+          dateParse = new Date(
+            formatedDate.split("/")[0] +
+              "-" +
+              formatedDate.split("/")[1] +
+              "-" +
+              formatedDate.split("/")[2]
+          );
+          dd = dateParse.getDate();
+          mm = dateParse.getMonth() + 1; //January is 0!
+          yyyy = dateParse.getFullYear();
+        }
+
         return yyyy + "-" + fillZeros(mm) + "-" + fillZeros(dd);
       };
       this.textInput = React.createRef();
@@ -73,7 +81,7 @@ const GridLayout = () => {
   };
 
   const components = { datePicker: getDatePicker() };
-  const handleEdit = (data) => {
+  const handleEdit = (data: keyable) => {
     const variant = "success";
     enqueueSnackbar(data.id, {
       variant,
@@ -82,9 +90,13 @@ const GridLayout = () => {
     });
   };
 
-  const getActionButton = (params) => {
+  interface params {
+    [data: string]: any;
+  }
+
+  const getActionButton = (params: params) => {
     return (
-      <Button variant="contained" onClick={() => handleEdit(params?.data)}>
+      <Button variant="contained" onClick={() => handleEdit(params.data)}>
         Edit
       </Button>
     );
@@ -125,20 +137,22 @@ const GridLayout = () => {
     };
   }, []);
 
-  const handleImport = ($event) => {
+  interface eventObject {
+    [target: string]: any;
+  }
+  const handleImport = ($event: eventObject) => {
     const files = $event.target.files;
     if (files.length) {
       const file = files[0];
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = (event: eventObject) => {
         const wb = read(event.target.result);
-            const sheets = wb.SheetNames;
+        const sheets = wb.SheetNames;
 
         if (sheets.length) {
-          const rows = utils.sheet_to_json(wb.Sheets[sheets[0]], {
+          const rows: any[] = utils.sheet_to_json(wb.Sheets[sheets[0]], {
             raw: false,
           });
-          console.log(rows);
           setRowData(rows);
         }
       };
@@ -165,7 +179,7 @@ const GridLayout = () => {
     const wb = utils.book_new();
     const ws = utils.json_to_sheet([]);
     utils.sheet_add_aoa(ws, headings);
-    const selectedData = gridApi.getSelectedRows();
+    const selectedData = gridApi?.getSelectedRows();
     if (selectedData.length > 0) {
       utils.sheet_add_json(ws, selectedData, {
         origin: "A2",
@@ -197,37 +211,38 @@ const GridLayout = () => {
     }
   };
 
-  const onGridReady = (params) => {
+  const onGridReady = (params: keyable) => {
     setGridAppi(params.api);
   };
 
-  const createNewRowData = () => {
-    const newData = {
-      athlete: "athlete",
-      age: "age",
-      country: "country",
-      year: "year",
-      date: "date",
-      sport: "sport",
-      gold: "gold",
-      silver: "silver",
-      bronze: "bronze",
-      total: "total",
-    };
-    return newData;
-  };
+  // const createNewRowData = () => {
+  //   const newData = {
+  //     athlete: "athlete",
+  //     age: "age",
+  //     country: "country",
+  //     year: "year",
+  //     date: "date",
+  //     sport: "sport",
+  //     gold: "gold",
+  //     silver: "silver",
+  //     bronze: "bronze",
+  //     total: "total",
+  //   };
+  //   return newData;
+  // };
+
   // Function for add item at the end of grid
   // eslint-disable-next-line no-unused-vars
-  const addItems = useCallback((addIndex) => {
-    const newItems = [createNewRowData()];
-    gridRef.current.api.applyTransaction({
-      add: newItems,
-      addIndex: addIndex,
-    });
-  }, []);
+  // const addItems = useCallback((addIndex) => {
+  //   const newItems = [createNewRowData()];
+  //   gridRef.current.api.applyTransaction({
+  //     add: newItems,
+  //     addIndex: addIndex,
+  //   });
+  // }, []);
 
   // Add extra row at the end
-  const processDataFromClipboard = useCallback((params) => {
+  const processDataFromClipboard = useCallback((params: keyable) => {
     const data = [...params.data];
     const emptyLastRow =
       data[data.length - 1][0] === "" && data[data.length - 1].length === 1;
@@ -245,15 +260,15 @@ const GridLayout = () => {
         const index = data.length - 1;
         const row = data.slice(index, index + 1)[0];
         // Create row object
-        const rowObject = {};
-        let currentColumn = focusedCell.column;
-        row.forEach((item) => {
+        const rowObject: keyable = {};
+        let currentColumn: currentObject = focusedCell.column;
+        row.forEach((item: keyable) => {
           if (!currentColumn) {
             return;
           }
           rowObject[currentColumn.colDef.field] = item;
           currentColumn =
-            gridRef.current.columnApi.getDisplayedColAfter(currentColumn);
+            gridRef.current?.columnApi.getDisplayedColAfter(currentColumn);
         });
         rowsToAdd.push(rowObject);
       }
